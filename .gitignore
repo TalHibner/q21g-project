@@ -18,7 +18,7 @@ logs/
 *.log
 
 # Windows metadata
-*.Zone.Identifier
+*Zone.Identifier
 
 # SDK build artifacts
 Q21G-player-whl/dist/
