@@ -1,0 +1,29 @@
+# Secrets and credentials
+.env
+token.json
+client_secret*.json
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Data (built locally)
+knowledge_base/data/
+course_pdfs/
+
+# Logs
+logs/
+*.log
+
+# Windows metadata
+*.Zone.Identifier
+
+# SDK build artifacts
+Q21G-player-whl/dist/
+Q21G-player-whl/db/
+Q21G-referee-whl/dist/
+
+# Diagnostic scripts
+tests/diagnose_*.py
