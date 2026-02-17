@@ -1,0 +1,23 @@
+{
+  "_comment": "Q21 Player SDK Configuration - Copy to config.json and customize",
+
+  "league": {
+    "_description": "League settings - get manager_email from your instructor",
+    "manager_email": "league.manager@example.com",
+    "league_id": "LEAGUE001",
+    "protocol_version": "league.v2"
+  },
+
+  "player": {
+    "_description": "Your player identity - shown to League Manager",
+    "user_id": "your-user-id",
+    "display_name": "Your Name",
+    "game_types": ["q21"]
+  },
+
+  "app": {
+    "_description": "PlayerAI module - points to your implementation",
+    "player_ai_module": "my_player",
+    "player_ai_class": "MyPlayerAI"
+  }
+}

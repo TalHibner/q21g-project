@@ -1,0 +1,71 @@
+# Area: Protocol Logging
+# PRD: docs/LOGGER_OUTPUT_PLAYER.md
+"""Protocol logging constants - message mappings and color codes."""
+
+
+class Colors:
+    """ANSI color codes for terminal output."""
+    GREEN = "\033[92m"
+    ORANGE = "\033[93m"
+    RED = "\033[91m"
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+
+
+# Message type to display name mapping (PRD Section 10)
+MESSAGE_DISPLAY_NAMES = {
+    # Messages player RECEIVES
+    "BROADCAST_START_SEASON": "START-SEASON",
+    "SEASON_REGISTRATION_RESPONSE": "SIGNUP-RESPONSE",
+    "BROADCAST_ASSIGNMENT_TABLE": "ASSIGNMENT-TABLE",
+    "BROADCAST_NEW_LEAGUE_ROUND": "START-ROUND",
+    "Q21WARMUPCALL": "PING-CALL",
+    "Q21_WARMUP_CALL": "PING-CALL",
+    "Q21ROUNDSTART": "START-GAME",
+    "Q21_ROUND_START": "START-GAME",
+    "Q21ANSWERSBATCH": "QUESTION-ANSWERS",
+    "Q21_ANSWERS_BATCH": "QUESTION-ANSWERS",
+    "Q21SCOREFEEDBACK": "ROUND-SCORE-REPORT",
+    "Q21_SCORE_FEEDBACK": "ROUND-SCORE-REPORT",
+    "LEAGUE_COMPLETED": "SEASON-ENDED",
+    # Messages player SENDS
+    "SEASON_REGISTRATION_REQUEST": "SEASON-SIGNUP",
+    "Q21WARMUPRESPONSE": "PING-RESPONSE",
+    "Q21_WARMUP_RESPONSE": "PING-RESPONSE",
+    "Q21QUESTIONSBATCH": "ASK-20-QUESTIONS",
+    "Q21_QUESTIONS_BATCH": "ASK-20-QUESTIONS",
+    "Q21GUESSSUBMISSION": "MY-GUESS",
+    "Q21_GUESS_SUBMISSION": "MY-GUESS",
+}
+
+# Expected response mapping (PRD Section 10)
+EXPECTED_RESPONSES = {
+    "BROADCAST_START_SEASON": "SEASON-SIGNUP",
+    "SEASON_REGISTRATION_REQUEST": "SIGNUP-RESPONSE",
+    "SEASON_REGISTRATION_RESPONSE": "Wait for ASSIGNMENT-TABLE",
+    "BROADCAST_ASSIGNMENT_TABLE": "Wait for START-ROUND",
+    "BROADCAST_NEW_LEAGUE_ROUND": "Wait for PING-CALL",
+    "Q21WARMUPCALL": "PING-RESPONSE",
+    "Q21_WARMUP_CALL": "PING-RESPONSE",
+    "Q21WARMUPRESPONSE": "Wait for START-GAME",
+    "Q21_WARMUP_RESPONSE": "Wait for START-GAME",
+    "Q21ROUNDSTART": "ASK-20-QUESTIONS",
+    "Q21_ROUND_START": "ASK-20-QUESTIONS",
+    "Q21QUESTIONSBATCH": "QUESTION-ANSWERS",
+    "Q21_QUESTIONS_BATCH": "QUESTION-ANSWERS",
+    "Q21ANSWERSBATCH": "MY-GUESS",
+    "Q21_ANSWERS_BATCH": "MY-GUESS",
+    "Q21GUESSSUBMISSION": "ROUND-SCORE-REPORT",
+    "Q21_GUESS_SUBMISSION": "ROUND-SCORE-REPORT",
+    "Q21SCOREFEEDBACK": "None (terminal)",
+    "Q21_SCORE_FEEDBACK": "None (terminal)",
+    "LEAGUE_COMPLETED": "None (terminal)",
+}
+
+# Callback display names
+CALLBACK_DISPLAY_NAMES = {
+    "get_warmup_answer": "answer_warmup",
+    "get_questions": "generate_questions",
+    "get_guess": "formulate_guess",
+    "on_score_received": "receive_score",
+}
