@@ -1,0 +1,48 @@
+[project]
+name = "q21-referee"
+version = "2.0.0"
+description = "Q21 Referee SDK - Implement AI callbacks for the Q21 League game"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "LicenseRef-Proprietary"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Dr. Yoram Segal"},
+    {name = "Omry Tzabar"},
+]
+keywords = ["q21", "referee", "game", "ai", "sdk"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.5.0",
+    "google-api-python-client>=2.100.0",
+    "google-auth>=2.23.0",
+    "google-auth-oauthlib>=1.1.0",
+    "google-auth-httplib2>=0.1.0",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.18.0"]
+all = [
+    "q21-referee[llm]",
+]
+
+[project.urls]
+Repository = "https://github.com/OmryTzabbar1/q21-referee-sdk"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "Cython>=3.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+q21_referee = ["*.so", "*.pyd"]
