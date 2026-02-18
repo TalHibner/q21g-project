@@ -2,8 +2,10 @@
 my_ai.py — Q21G Referee AI Implementation
 ==========================================
 
-Implements 4 callbacks using knowledge base (SQLite + ChromaDB) and
-Claude LLM for hint generation, question answering, and scoring.
+Building Block: MyRefereeAI (4 SDK callbacks)
+    Input Data:  ctx dicts from SDK with dynamic fields per callback
+    Output Data: warmup question, round info (hint/word), answers, score/feedback
+    Setup Data:  knowledge_base (SQLite + ChromaDB), ANTHROPIC_API_KEY, skills/*.md prompts
 """
 
 import random

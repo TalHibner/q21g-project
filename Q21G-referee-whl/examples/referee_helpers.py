@@ -1,4 +1,10 @@
-"""Referee helper functions — hint generation, question answering."""
+"""Referee helpers — hint generation, question answering.
+
+Building Block: generate_hint_and_word, answer_questions
+    Input Data:  paragraph dict, Anthropic client, questions list
+    Output Data: hint/word dict, answers list [{question_number, answer}]
+    Setup Data:  skills/ prompts, ANTHROPIC_API_KEY, optional VectorStore
+"""
 
 import json
 import logging
@@ -8,28 +14,26 @@ from pathlib import Path
 import anthropic
 
 from knowledge_base.llm_client import call_llm  # shared retry logic
+from knowledge_base.skill_plugin import build_default_registry
 from referee_scoring import score_guess  # noqa: F401 — re-exported for my_ai
 
 SKILLS_DIR = Path(__file__).resolve().parents[2] / "skills"
 logger = logging.getLogger(__name__)
+_registry = build_default_registry(SKILLS_DIR)
 
 
 def _load_skill(name: str) -> str:
-    return (SKILLS_DIR / name).read_text(encoding="utf-8")
+    return _registry.get(name).get_prompt()
 
 
 def _extract_words(text: str) -> set[str]:
     """Extract normalized word set from text."""
-    words = set()
-    for w in text.split():
-        cleaned = re.sub(r'[^\w]', '', w).lower()
-        if cleaned and len(cleaned) > 1:
-            words.add(cleaned)
-    return words
+    return {c for w in text.split()
+            if len(c := re.sub(r'[^\w]', '', w).lower()) > 1}
 
 
 def validate_taboo(hint: str, paragraph_text: str) -> set[str]:
-    """Return set of overlapping words between hint and paragraph."""
+    """Return overlapping words between hint and paragraph."""
     return _extract_words(hint) & _extract_words(paragraph_text)
 
 

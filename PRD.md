@@ -465,16 +465,28 @@ pytest tests/test_game_simulation.py -v    # E2E simulation
 
 ---
 
-## 8. Development Phases
+## 8. Development Phases & Timeline
 
-| Phase | Description | Status |
+| Phase | Description | Status | Timeline |
+|---|---|---|---|
+| 0 | Project setup, venv, SDK installation | Done | Week 1 |
+| 1 | Knowledge base (PDF -> SQLite + ChromaDB) | Done | Weeks 1-2 |
+| 2 | Referee implementation (4 callbacks) | Done | Weeks 2-3 |
+| 3 | Player implementation (4 callbacks) | Done | Weeks 3-4 |
+| 4 | End-to-end simulation + optimization | Done | Weeks 4-5 |
+| 5 | Gmail integration + production deployment | Done | Week 5 |
+| 6 | Testing, documentation, multiprocessing polish | Done | Week 6 |
+
+### 8.1 Milestones
+
+| Milestone | Date | Deliverable |
 |---|---|---|
-| 0 | Project setup, venv, SDK installation | Done |
-| 1 | Knowledge base (PDF -> SQLite + ChromaDB) | Done |
-| 2 | Referee implementation (4 callbacks) | Done |
-| 3 | Player implementation (4 callbacks) | Done |
-| 4 | End-to-end simulation + optimization | Done |
-| 5 | Gmail integration + production deployment | Done |
+| M1: KB Pipeline Operational | Week 2 | 22 PDFs → 340 valid paragraphs in SQLite + ChromaDB |
+| M2: Referee Self-Play | Week 3 | All 4 referee callbacks working against mock player |
+| M3: Player Complete | Week 4 | All 4 player callbacks, dual search, question generation |
+| M4: Score Optimization | Week 5 | Private score ≥70 average, 2+ league points/game |
+| M5: Production Ready | Week 5 | Gmail OAuth integration, live tournament ready |
+| M6: Submission Ready | Week 6 | ≥70% test coverage, full documentation, multiprocessing |
 
 ---
 

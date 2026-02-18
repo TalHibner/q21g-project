@@ -1,4 +1,12 @@
-"""Player helper functions — warmup solver, search, question generation."""
+"""Player helper functions — warmup solver, search, question generation.
+
+Building Block: solve_warmup, search_candidates, generate_questions
+    Input Data:  warmup question string; VectorStore + ParagraphDB + book_name/hint;
+                 Anthropic client + candidates + context strings
+    Output Data: warmup answer string; ranked candidate list; 20 question dicts
+    Setup Data:  skills/player_question_generator.md, ANTHROPIC_API_KEY,
+                 knowledge_base (SQLite + ChromaDB)
+"""
 
 import json
 import logging
@@ -9,13 +17,15 @@ import anthropic
 
 from player_guess import make_guess  # noqa: F401 — re-exported for my_player
 from knowledge_base.llm_client import call_llm  # shared retry logic
+from knowledge_base.skill_plugin import build_default_registry
 
 SKILLS_DIR = Path(__file__).resolve().parents[1] / "skills"
 logger = logging.getLogger(__name__)
+_registry = build_default_registry(SKILLS_DIR)
 
 
 def _load_skill(name: str) -> str:
-    return (SKILLS_DIR / name).read_text(encoding="utf-8")
+    return _registry.get(name).get_prompt()
 
 
 def solve_warmup(question: str) -> str:

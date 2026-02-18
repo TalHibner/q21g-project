@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint, Format & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install SDKs
+          pip install -e Q21G-referee-whl/
+          pip install Q21G-player-whl/dist/q21_player-1.0.2-py3-none-any.whl
+          # Install shared knowledge base
+          pip install -e knowledge_base/
+          # Install runtime + dev dependencies
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files
+
+      - name: Run tests
+        run: |
+          pytest tests/ -x -q --tb=short \
+            --cov=knowledge_base \
+            --cov=Q21G-referee-whl/examples \
+            --cov=Q21G-player-whl \
+            --cov-report=term-missing
+        env:
+          # Placeholder key — LLM calls are mocked in tests
+          ANTHROPIC_API_KEY: "sk-ant-test-placeholder"

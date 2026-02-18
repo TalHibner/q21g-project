@@ -1,4 +1,12 @@
-"""Player guess maker — re-ranks candidates using Q&A and produces final guess."""
+"""Player guess maker — re-ranks candidates using Q&A and produces final guess.
+
+Building Block: make_guess
+    Input Data:  Anthropic client, candidate list, questions_sent, answers,
+                 book_name, book_hint, association_word
+    Output Data: {opening_sentence, sentence_justification, associative_word,
+                 word_justification, confidence}
+    Setup Data:  skills/player_guess_maker.md, ANTHROPIC_API_KEY
+"""
 
 import json
 import logging

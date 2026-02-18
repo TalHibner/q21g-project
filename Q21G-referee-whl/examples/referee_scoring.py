@@ -1,4 +1,12 @@
-"""Referee scoring — LLM-based guess evaluation and league point calculation."""
+"""Referee scoring — LLM-based guess evaluation and league point calculation.
+
+Building Block: score_guess
+    Input Data:  actual opening_sentence, association_word, paragraph_text,
+                 player guess dict {opening_sentence, sentence_justification,
+                 associative_word, word_justification, confidence}
+    Output Data: {league_points (0-3), private_score (0-100), breakdown dict, feedback dict}
+    Setup Data:  skills/referee_scorer.md, ANTHROPIC_API_KEY
+"""
 
 import json
 import logging

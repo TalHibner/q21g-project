@@ -2,8 +2,10 @@
 my_player.py — Q21G Player AI Implementation
 ==============================================
 
-Implements 4 callbacks using knowledge base (SQLite + ChromaDB) and
-Claude LLM for strategic question generation and guess making.
+Building Block: MyPlayerAI (4 SDK callbacks)
+    Input Data:  ctx dicts from SDK with dynamic fields per callback
+    Output Data: warmup answer, 20 questions, final guess (sentence + word), score log
+    Setup Data:  knowledge_base (SQLite + ChromaDB), ANTHROPIC_API_KEY, skills/*.md prompts
 """
 
 import sys
