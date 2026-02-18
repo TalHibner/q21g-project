@@ -1,6 +1,9 @@
 """SQLite database for paragraph lookups.
 
-Provides ParagraphDB class for fast queries over the corpus.
+Building Block: ParagraphDB
+    Input Data:  paragraph dicts with id, pdf_name, opening_sentence, full_text, word_count
+    Output Data: paragraph dicts via get_by_id, get_random, search_text, get_by_pdf_name
+    Setup Data:  paragraphs.db file at knowledge_base/data/paragraphs.db (built by corpus_builder)
 """
 
 import sqlite3

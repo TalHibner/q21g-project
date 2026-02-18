@@ -1,5 +1,10 @@
 """Paragraph quality filter — filters out code fragments, headings, and noise.
 
+Building Block: is_valid_paragraph
+    Input Data:  opening_sentence string, full_text string
+    Output Data: bool — True if paragraph is a valid game candidate
+    Setup Data:  none (stateless, pure function with compiled regex patterns)
+
 Determines which paragraphs are valid game candidates based on their
 opening sentence and content.
 """

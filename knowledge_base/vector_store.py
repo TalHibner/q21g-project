@@ -1,17 +1,26 @@
 """ChromaDB vector store for semantic paragraph search.
 
-Uses paraphrase-multilingual-MiniLM-L12-v2 for Hebrew+English embeddings.
+Building Block: VectorStore
+    Input Data:  query strings (Hebrew/English), optional pdf_name filter
+    Output Data: ranked list of {id, text, distance, pdf_name, opening_sentence} dicts
+    Setup Data:  ChromaDB at knowledge_base/data/chroma_db/,
+                 embedding model paraphrase-multilingual-MiniLM-L12-v2
 """
 
+import logging
 from pathlib import Path
 from typing import Optional
 
 import chromadb
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
+from knowledge_base.embedding_builder import compute_embeddings_parallel
+
 DEFAULT_CHROMA_PATH = Path(__file__).parent / "data" / "chroma_db"
 MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
 COLLECTION_NAME = "course_paragraphs"
+
+logger = logging.getLogger(__name__)
 
 
 class VectorStore:
@@ -32,8 +41,22 @@ class VectorStore:
             )
         return self._collection
 
+    def _metadata(self, p: dict) -> dict:
+        """Build metadata dict for a paragraph record."""
+        return {
+            "pdf_name": p["pdf_name"],
+            "opening_sentence": p["opening_sentence"],
+            "paragraph_index": p["paragraph_index"],
+            "word_count": p["word_count"],
+        }
+
     def create_collection(self, paragraphs: list[dict]) -> None:
-        """Build the vector index from paragraph records."""
+        """Build the vector index from paragraph records.
+
+        Uses multiprocessing to pre-compute embeddings in parallel,
+        then inserts pre-embedded documents into ChromaDB.
+        Falls back to sequential embedding if the pool fails.
+        """
         try:
             self._client.delete_collection(COLLECTION_NAME)
         except Exception:
@@ -46,18 +69,28 @@ class VectorStore:
         )
 
         batch_size = 100
-        for i in range(0, len(paragraphs), batch_size):
-            batch = paragraphs[i:i + batch_size]
-            col.add(
-                ids=[p["id"] for p in batch],
-                documents=[p["text"] for p in batch],
-                metadatas=[{
-                    "pdf_name": p["pdf_name"],
-                    "opening_sentence": p["opening_sentence"],
-                    "paragraph_index": p["paragraph_index"],
-                    "word_count": p["word_count"],
-                } for p in batch],
-            )
+        all_texts = [p["text"] for p in paragraphs]
+
+        try:
+            all_embeddings = compute_embeddings_parallel(all_texts, batch_size)
+
+            for i in range(0, len(paragraphs), batch_size):
+                batch = paragraphs[i:i + batch_size]
+                col.add(
+                    ids=[p["id"] for p in batch],
+                    documents=[p["text"] for p in batch],
+                    embeddings=all_embeddings[i:i + batch_size],
+                    metadatas=[self._metadata(p) for p in batch],
+                )
+        except Exception as exc:
+            logger.warning("Parallel embedding failed (%s), sequential", exc)
+            for i in range(0, len(paragraphs), batch_size):
+                batch = paragraphs[i:i + batch_size]
+                col.add(
+                    ids=[p["id"] for p in batch],
+                    documents=[p["text"] for p in batch],
+                    metadatas=[self._metadata(p) for p in batch],
+                )
 
         self._collection = col
         print(f"ChromaDB built with {len(paragraphs)} vectors")

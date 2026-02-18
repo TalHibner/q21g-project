@@ -1,83 +1,102 @@
 """PDF to paragraphs extraction pipeline.
 
+Uses multiprocessing to parse PDFs in parallel (CPU-bound task).
+
 Input:  course_pdfs/ directory with Hebrew PDF files
 Output: knowledge_base/data/paragraphs.json
 """
 
 import json
-import re
+import logging
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
-import pdfplumber
-
+from knowledge_base.pdf_parser import extract_text_from_pdf, split_into_paragraphs
 from knowledge_base.sentence_extractor import extract_first_sentence
 
-
-def extract_text_from_pdf(pdf_path: Path) -> list[dict]:
-    """Extract text page-by-page from a single PDF."""
-    pages = []
-    with pdfplumber.open(pdf_path) as pdf:
-        for i, page in enumerate(pdf.pages):
-            text = page.extract_text()
-            if text and text.strip():
-                pages.append({"page_number": i + 1, "text": text.strip()})
-    return pages
+logger = logging.getLogger(__name__)
 
 
-def split_into_paragraphs(full_text: str, min_words: int = 15) -> list[str]:
-    """Split text into content paragraphs, filtering noise.
 
-    Splits on double newlines, then filters out headers, TOC lines,
-    tables, and short fragments.
+def _process_single_pdf(pdf_path: Path) -> list[dict]:
+    """Process a single PDF into paragraph records (runs in worker process).
+
+    This function is designed to run in a separate process via
+    ProcessPoolExecutor.  Each worker independently extracts text,
+    splits into paragraphs, and detects opening sentences — fully
+    CPU-bound work that benefits from true parallelism.
+
+    Args:
+        pdf_path: Path to the PDF file.
+
+    Returns:
+        List of paragraph dicts ready for the corpus.
     """
-    raw = re.split(r'\n\s*\n', full_text)
-    paragraphs = []
+    pages = extract_text_from_pdf(pdf_path)
+    full_text = "\n\n".join(p["text"] for p in pages)
+    paragraphs = split_into_paragraphs(full_text)
 
-    for p in raw:
-        p = p.strip()
-        words = p.split()
-        if len(words) < min_words:
-            continue
-        # Skip TOC-style lines (number prefix + short text)
-        if re.match(r'^[\d.]+\s', p) and len(words) < 10:
-            continue
-        # Skip content that's mostly numbers/symbols (tables, formulas)
-        alpha_count = sum(1 for c in p if c.isalpha())
-        if alpha_count / max(len(p), 1) < 0.4:
-            continue
-        paragraphs.append(p)
-
-    return paragraphs
+    records = []
+    for i, para_text in enumerate(paragraphs):
+        records.append({
+            "id": f"{pdf_path.stem}_p{i:04d}",
+            "pdf_name": pdf_path.stem,
+            "pdf_filename": pdf_path.name,
+            "paragraph_index": i,
+            "text": para_text,
+            "opening_sentence": extract_first_sentence(para_text),
+            "word_count": len(para_text.split()),
+        })
+    return records
 
 
 def build_corpus(pdf_dir: Path, output_dir: Path) -> dict:
     """Main pipeline: PDFs -> paragraphs.json.
 
+    Uses multiprocessing to parse PDFs in parallel across available
+    CPU cores.  Each PDF is processed independently (CPU-bound: text
+    extraction, paragraph splitting, sentence detection), making this
+    an ideal multiprocessing workload.
+
+    Falls back to sequential processing if the process pool fails.
+
     Returns the full data dict with paragraphs and metadata.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
-    all_paragraphs = []
+    all_paragraphs: list[dict] = []
 
     pdf_files = sorted(pdf_dir.glob("*.pdf"))
     print(f"Found {len(pdf_files)} PDFs")
 
-    for pdf_path in pdf_files:
-        print(f"Processing: {pdf_path.name}")
-        pages = extract_text_from_pdf(pdf_path)
-        full_text = "\n\n".join(p["text"] for p in pages)
-        paragraphs = split_into_paragraphs(full_text)
-        print(f"  -> {len(paragraphs)} paragraphs")
+    # Use multiprocessing for parallel PDF parsing (CPU-bound)
+    n_workers = min(len(pdf_files), multiprocessing.cpu_count() or 1)
+    logger.info("Parsing %d PDFs with %d worker processes", len(pdf_files), n_workers)
 
-        for i, para_text in enumerate(paragraphs):
-            all_paragraphs.append({
-                "id": f"{pdf_path.stem}_p{i:04d}",
-                "pdf_name": pdf_path.stem,
-                "pdf_filename": pdf_path.name,
-                "paragraph_index": i,
-                "text": para_text,
-                "opening_sentence": extract_first_sentence(para_text),
-                "word_count": len(para_text.split()),
-            })
+    try:
+        with ProcessPoolExecutor(max_workers=n_workers) as pool:
+            futures = {
+                pool.submit(_process_single_pdf, pdf_path): pdf_path
+                for pdf_path in pdf_files
+            }
+            for future in as_completed(futures):
+                pdf_path = futures[future]
+                try:
+                    records = future.result()
+                    all_paragraphs.extend(records)
+                    print(f"Processing: {pdf_path.name}  -> {len(records)} paragraphs")
+                except Exception as exc:
+                    logger.error("Failed to process %s: %s", pdf_path.name, exc)
+    except Exception as exc:
+        # Fallback: sequential processing if pool fails
+        logger.warning("Process pool failed (%s), falling back to sequential", exc)
+        for pdf_path in pdf_files:
+            records = _process_single_pdf(pdf_path)
+            all_paragraphs.extend(records)
+            print(f"Processing: {pdf_path.name}  -> {len(records)} paragraphs")
+
+    # Sort by ID to ensure deterministic output regardless of process order
+    all_paragraphs.sort(key=lambda p: p["id"])
 
     data = {
         "paragraphs": all_paragraphs,

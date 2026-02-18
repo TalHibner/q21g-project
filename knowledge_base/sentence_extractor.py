@@ -1,5 +1,10 @@
 """Hebrew first-sentence extraction for academic paragraphs.
 
+Building Block: extract_first_sentence
+    Input Data:  raw paragraph text (Hebrew/English mix, multi-line)
+    Output Data: single-line first sentence string (with terminal punctuation)
+    Setup Data:  none (stateless, pure function)
+
 Handles mixed Hebrew/English text with abbreviations, decimals, and URLs.
 In Hebrew RTL text, periods often appear at line START (e.g., ".חווט\\n")
 which is logically the END of the previous sentence.
