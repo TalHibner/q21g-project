@@ -27,3 +27,7 @@ Q21G-referee-whl/dist/
 
 # Diagnostic scripts
 tests/diagnose_*.py
+
+# PDF Files - CRITICAL: NEVER COMMIT THESE
+*.pdf
+*.PDF.coverage

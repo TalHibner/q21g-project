@@ -1,0 +1,94 @@
+[project]
+name = "q21g"
+version = "1.0.0"
+description = "Competitive '21 Questions' AI agents — Referee and Player — over Hebrew academic PDFs"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+authors = [
+    {name = "Tal Hibner"},
+]
+keywords = ["nlp", "rag", "hebrew", "ai-agents", "21-questions"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "anthropic>=0.49.0",
+    "pdfplumber>=0.11.0",
+    "chromadb>=0.6.0",
+    "sentence-transformers>=3.4.0",
+    "google-auth>=2.38.0",
+    "google-auth-oauthlib>=1.2.0",
+    "google-api-python-client>=2.165.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "pre-commit>=4.0.0",
+    "ruff>=0.9.0",
+    "jupyter>=1.1.0",
+    "matplotlib>=3.10.0",
+    "pandas>=2.2.0",
+    "seaborn>=0.13.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = [
+    "E501",   # line too long — handled by formatter
+    "UP007",  # Use X | Y for type annotations — keep for clarity
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["F841"]  # unused variables common in test stubs
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# To run with coverage:
+#   pip install pytest-cov
+#   pytest --cov=knowledge_base --cov=Q21G-referee-whl/examples --cov=Q21G-player-whl --cov-report=term-missing --cov-report=html:htmlcov
+
+[tool.coverage.run]
+source = [
+    "knowledge_base",
+    "Q21G-referee-whl/examples",
+    "Q21G-player-whl",
+]
+omit = [
+    "*/tests/*",
+    "*/.venv/*",
+    "*/site-packages/*",
+    "Q21G-referee-whl/src/*",
+    "Q21G-player-whl/_infra/*",
+    "Q21G-player-whl/setup.py",
+    "Q21G-player-whl/setup_config.py",
+    "Q21G-player-whl/setup_gmail.py",
+    "Q21G-player-whl/verify_setup.py",
+    "Q21G-player-whl/run.py",
+    "Q21G-player-whl/init_db.py",
+    "Q21G-referee-whl/examples/main.py",
+    "Q21G-referee-whl/examples/sdk_ai.py",
+    "Q21G-referee-whl/examples/test_local.py",
+    "knowledge_base/setup.py",
+    "knowledge_base/corpus_builder.py",
+    "knowledge_base/difficulty_indexer.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "pass",
+]

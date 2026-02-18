@@ -1,0 +1,11 @@
+# Q21G Project — Development & Test Dependencies
+# Install with: pip install -r requirements-dev.txt
+
+pytest>=8.3.0
+pytest-cov>=6.0.0
+pre-commit>=4.0.0
+ruff>=0.9.0
+jupyter>=1.1.0
+matplotlib>=3.10.0
+pandas>=2.2.0
+seaborn>=0.13.0

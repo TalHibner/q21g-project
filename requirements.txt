@@ -1,0 +1,22 @@
+# Q21G Project — Python Dependencies
+#
+# Install all dependencies:
+#   pip install -r requirements.txt
+#
+# For development (includes linting and testing tools):
+#   pip install -r requirements.txt -r requirements-dev.txt
+#
+# Note: SDK packages are installed separately (see README.md Setup section)
+
+# ─── LLM ──────────────────────────────────────────────────────────────────────
+anthropic>=0.49.0
+
+# ─── Knowledge Base ───────────────────────────────────────────────────────────
+pdfplumber>=0.11.0
+chromadb>=0.6.0
+sentence-transformers>=3.4.0
+
+# ─── Email / OAuth ────────────────────────────────────────────────────────────
+google-auth>=2.38.0
+google-auth-oauthlib>=1.2.0
+google-api-python-client>=2.165.0
