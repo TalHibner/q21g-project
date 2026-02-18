@@ -1,63 +1,12 @@
-"""Tests for the knowledge_base package."""
+"""Tests for SQLite database and ChromaDB vector store (require built data)."""
 
 import pytest
 from pathlib import Path
 
-from knowledge_base.sentence_extractor import extract_first_sentence
-
 DATA_DIR = Path(__file__).parent.parent / "knowledge_base" / "data"
 
 
-# ── Sentence extractor unit tests (no external deps) ──
-
-
-def test_simple_period():
-    assert extract_first_sentence("Hello world. More text here.") == "Hello world."
-
-
-def test_question_mark():
-    assert extract_first_sentence("Is this a question? Yes it is.") == "Is this a question?"
-
-
-def test_exclamation():
-    assert extract_first_sentence("Wow! That was great.") == "Wow!"
-
-
-def test_skip_abbreviation():
-    text = "Dr. Smith went home early today. Then he rested."
-    assert extract_first_sentence(text) == "Dr. Smith went home early today."
-
-
-def test_skip_decimal():
-    text = "The value is 3.14 in the formula. Next sentence."
-    assert extract_first_sentence(text) == "The value is 3.14 in the formula."
-
-
-def test_skip_ellipsis():
-    text = "He thought... then acted. Done."
-    assert extract_first_sentence(text) == "He thought... then acted."
-
-
-def test_no_boundary_returns_full():
-    text = "No punctuation here at all"
-    assert extract_first_sentence(text) == text
-
-
-def test_empty_string():
-    assert extract_first_sentence("") == ""
-
-
-def test_mixed_hebrew_english():
-    text = "Transformer לדומה תא ונחב. אבה בלשה."
-    result = extract_first_sentence(text)
-    assert result == "Transformer לדומה תא ונחב."
-
-
-def test_single_sentence_with_period():
-    assert extract_first_sentence("Only one sentence.") == "Only one sentence."
-
-
-# ── SQLite database tests (require built data) ──
+# ── SQLite database tests ──
 
 
 @pytest.fixture
@@ -76,7 +25,6 @@ def test_db_count(db):
 
 
 def test_get_by_id(db):
-    # Get a random one first to know a valid ID
     p = db.get_random()
     assert p is not None
     result = db.get_by_id(p["id"])
@@ -95,9 +43,8 @@ def test_get_by_pdf_name(db):
 def test_get_random(db):
     p = db.get_random()
     assert p is not None
-    assert "id" in p
-    assert "opening_sentence" in p
-    assert "full_text" in p
+    for key in ("id", "opening_sentence", "full_text"):
+        assert key in p
 
 
 def test_get_random_word_filter(db):
@@ -121,9 +68,8 @@ def test_get_random_difficulty_filter(db):
 
 
 def test_search_text(db):
-    # Search for something likely to exist
     results = db.search_text("AI")
-    assert len(results) >= 0  # may or may not find it
+    assert len(results) >= 0
 
 
 def test_get_all_pdf_names(db):
@@ -162,8 +108,5 @@ def test_search_result_format(vs):
     results = vs.search("neural network", n_results=1)
     assert len(results) > 0
     r = results[0]
-    assert "id" in r
-    assert "text" in r
-    assert "distance" in r
-    assert "pdf_name" in r
-    assert "opening_sentence" in r
+    for key in ("id", "text", "distance", "pdf_name", "opening_sentence"):
+        assert key in r
